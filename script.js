@@ -67,3 +67,20 @@ document.addEventListener('DOMContentLoaded', function() {
     initParticles();
     animateParticles();
 });
+
+document.querySelectorAll('.gallery-card').forEach(card => {
+    card.addEventListener('click', () => {
+        // Eğer başka bir kart açık ise onu kapat
+        document.querySelectorAll('.gallery-card.expanded').forEach(other => {
+            if (other !== card) {
+                other.classList.remove('expanded');
+            }
+        });
+
+        // Bu karta toggle uygula
+        card.classList.toggle('expanded');
+    });
+});
+
+
+
