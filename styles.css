@@ -259,17 +259,19 @@ z-index: -3;
 
 /* Hero Bölümü */
 .hero-section {
-  height: 100vh;
+  min-height: 100svh; /* Daha güvenli bir değer: "svh" viewport'a göre daha sağlam */
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
   background: rgba(0, 0, 0, 0.5);
   opacity: 0;
-  transform: translateY(50px);
+  transform: translateY(30px); /* Çok yukarıdan başlamasın */
   animation: fadeInUp 1.5s forwards;
-  padding: 20px 20px; /* Yatay padding küçük, dikey boşluk korunur */
+  padding: 80px 20px 20px; /* Navbar için üstten boşluk bırak */
   box-sizing: border-box;
+  position: relative;
+  z-index: 1; /* Navbar ile çakışmayı önler */
 }
 
 .hero-content {
@@ -279,20 +281,33 @@ z-index: -3;
 }
 
 .hero-content h1 {
-  font-size: 4em;
+  font-size: 3em;
   color: #00ff99;
   letter-spacing: 2px;
-
-  word-break: break-word;     /* Uzun kelimeler taşmasın */
-  overflow-wrap: break-word;  /* Alternatif olarak tarayıcı desteği için */
-  white-space: normal;        /* Gerekirse satıra sarsın */
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 
-
 .hero-content p {
-  font-size: 1.5em;
+  font-size: 1.2em;
   color: #fff;
   margin-top: 20px;
+}
+
+/* Mobil uyumlu medya sorguları */
+@media (max-width: 768px) {
+  .hero-content h1 {
+    font-size: 2em;
+  }
+
+  .hero-content p {
+    font-size: 1em;
+  }
+
+  .hero-section {
+    padding: 100px 15px 20px; /* Daha fazla üst boşluk */
+    transform: translateY(20px); /* Daha az animasyon offset */
+  }
 }
 
 
