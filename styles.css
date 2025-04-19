@@ -300,11 +300,11 @@ z-index: -3;
 
 @media (max-width: 480px) {
   .hero-content h1 {
-    font-size: 2em; /* Daha da küçük başlık boyutu */
+    font-size: 3em; /* Daha da küçük başlık boyutu */
   }
 
   .hero-content p {
-    font-size: 1em; /* Daha da küçük paragraf boyutu */
+    font-size: 2em; /* Daha da küçük paragraf boyutu */
   }
 }
 
