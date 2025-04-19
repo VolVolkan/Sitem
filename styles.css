@@ -1,6 +1,7 @@
 /* Genel Ayarlar */
 html {
   scroll-behavior: smooth;
+
 }
 * {
   margin: 0;
@@ -8,20 +9,42 @@ html {
   box-sizing: border-box;
 }
 body {
-  font-family: 'Orbitron', sans-serif; /* Orbitron fontu kullanılıyor */
+
   background-color: #0f0f0f;
+  font-family: 'Oxygen', sans-serif;
+
   color: #fff;
   overflow-x: hidden;
 }
-
+h1 {
+  font-size: 2.5em; /* İstediğiniz boyutu buraya yazın */
+  font-size: 2.5em; /* Boyutu ayarlayın */
+  padding: 0 20px; /* Kenar boşlukları ekleyin */
+  margin: 0; /* Varsayılan margin'i sıfırlayın */
+  overflow: hidden; /* Taşmayı önlemek için */
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Orbitron', sans-serif; /* Orbitron fontu kullanılıyor */
+}
 .navbar {
+
   overflow-x: auto;
   white-space: nowrap;
   -webkit-overflow-scrolling: touch;
-  background-color: rgba(0, 0, 0, 0.7); /* Gerekirse arka plan */
+  background-color: rgba(0, 0, 0, 0.7); /* Gerekirse arka plan *
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 10px 20px; /* Yeterli padding ekleyin */
+  z-index: 10;
+  overflow: hidden; /* Taşmayı önlemek için *//
 }
 
 .navbar ul {
+
   display: inline-flex;
   padding: 0;
   margin: 0;
@@ -33,10 +56,11 @@ body {
   padding: 10px 20px;
 }
 
+
 .navbar a {
   color: white;
   text-decoration: none;
-  font-family: 'Orbitron', sans-serif;
+  font-family: 'Orbitron', sans-serif; /* Orbitron fontu kullanılıyor */
   font-weight: 500;
 }
 
