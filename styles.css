@@ -268,7 +268,7 @@ z-index: -3;
   opacity: 0;
   transform: translateY(50px);
   animation: fadeInUp 1.5s forwards;
-  padding: 100px 20px; /* Yatay padding küçük, dikey boşluk korunur */
+  padding: 20px 20px; /* Yatay padding küçük, dikey boşluk korunur */
   box-sizing: border-box;
 }
 
@@ -282,7 +282,12 @@ z-index: -3;
   font-size: 4em;
   color: #00ff99;
   letter-spacing: 2px;
+
+  word-break: break-word;     /* Uzun kelimeler taşmasın */
+  overflow-wrap: break-word;  /* Alternatif olarak tarayıcı desteği için */
+  white-space: normal;        /* Gerekirse satıra sarsın */
 }
+
 
 .hero-content p {
   font-size: 1.5em;
