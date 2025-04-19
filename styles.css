@@ -260,7 +260,10 @@ z-index: -3;
   opacity: 0;
   transform: translateY(50px);
   animation: fadeInUp 1.5s forwards;
+  padding: 20px; /* Ekranın köşelerinden uzaklaştırmak için padding ekleyin */
+  box-sizing: border-box; /* Padding'in toplam boyuta dahil edilmesini sağlar */
 }
+
 .hero-content h1 {
   font-size: 4em;
   color: #00ff99;
