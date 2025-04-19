@@ -259,57 +259,54 @@ z-index: -3;
 
 /* Hero Bölümü */
 .hero-section {
-  min-height: 100svh; /* Daha güvenli bir değer: "svh" viewport'a göre daha sağlam */
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
   background: rgba(0, 0, 0, 0.5);
+  padding: 40px;
   opacity: 0;
-  transform: translateY(30px); /* Çok yukarıdan başlamasın */
+  transform: translateY(50px);
   animation: fadeInUp 1.5s forwards;
-  padding: 80px 20px 20px; /* Navbar için üstten boşluk bırak */
-  box-sizing: border-box;
-  position: relative;
-  z-index: 1; /* Navbar ile çakışmayı önler */
-}
-
-.hero-content {
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
 }
 
 .hero-content h1 {
-  font-size: 3em;
+  font-size: 4em;
   color: #00ff99;
   letter-spacing: 2px;
-  overflow-wrap: break-word;
-  white-space: normal;
 }
 
 .hero-content p {
-  font-size: 1.2em;
+  font-size: 1.5em;
   color: #fff;
   margin-top: 20px;
 }
 
-/* Mobil uyumlu medya sorguları */
+/* Mobil cihazlar için ayarlamalar */
 @media (max-width: 768px) {
+  .hero-section {
+    padding: 20px; /* Daha az padding */
+  }
+
   .hero-content h1 {
-    font-size: 2em;
+    font-size: 2.5em; /* Daha küçük başlık boyutu */
   }
 
   .hero-content p {
-    font-size: 1em;
-  }
-
-  .hero-section {
-    padding: 100px 15px 20px; /* Daha fazla üst boşluk */
-    transform: translateY(20px); /* Daha az animasyon offset */
+    font-size: 1.2em; /* Daha küçük paragraf boyutu */
   }
 }
 
+@media (max-width: 480px) {
+  .hero-content h1 {
+    font-size: 2em; /* Daha da küçük başlık boyutu */
+  }
+
+  .hero-content p {
+    font-size: 1em; /* Daha da küçük paragraf boyutu */
+  }
+}
 
 /* Diğer Sayfa Bölümleri */
 .section {
