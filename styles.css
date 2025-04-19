@@ -1,6 +1,8 @@
 /* Genel Ayarlar */
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+
 
 }
 * {
@@ -228,15 +230,20 @@ z-index: -3;
   background-color: rgba(0, 0, 0, 0.7);
   padding: 10px;
   z-index: 10;
+  overflow-x: auto; /* Yatay kaydırma çubuğu eklemek için */
 }
+
 .navbar ul {
   display: flex;
   justify-content: center;
   list-style: none;
+  white-space: nowrap; /* Liste elemanlarının yan yana dizilmesini sağlar */
 }
+
 .navbar ul li {
   margin: 0 20px;
 }
+
 .navbar ul li a {
   color: #00ff99;
   text-decoration: none;
@@ -245,6 +252,7 @@ z-index: -3;
   letter-spacing: 1px;
   transition: color 0.3s;
 }
+
 .navbar ul li a:hover {
   color: #fff;
 }
@@ -260,8 +268,14 @@ z-index: -3;
   opacity: 0;
   transform: translateY(50px);
   animation: fadeInUp 1.5s forwards;
-  padding: 20px; /* Ekranın köşelerinden uzaklaştırmak için padding ekleyin */
-  box-sizing: border-box; /* Padding'in toplam boyuta dahil edilmesini sağlar */
+  padding: 100px 20px; /* Yatay padding küçük, dikey boşluk korunur */
+  box-sizing: border-box;
+}
+
+.hero-content {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .hero-content h1 {
@@ -269,11 +283,13 @@ z-index: -3;
   color: #00ff99;
   letter-spacing: 2px;
 }
+
 .hero-content p {
   font-size: 1.5em;
   color: #fff;
   margin-top: 20px;
 }
+
 
 /* Diğer Sayfa Bölümleri */
 .section {
