@@ -1,4 +1,5 @@
 /* Genel Ayarlar */
+
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
@@ -220,7 +221,7 @@ z-index: -3;
 }
 
 
-
+/* Navigasyon Menüsü */
 /* Navigasyon Menüsü */
 .navbar {
   position: fixed;
@@ -230,32 +231,42 @@ z-index: -3;
   background-color: rgba(0, 0, 0, 0.7);
   padding: 10px;
   z-index: 10;
-  overflow-x: auto; /* Yatay kaydırma çubuğu eklemek için */
+  overflow-x: auto; /* Yatay kaydırma çubuğu */
+  scrollbar-width: thin;
+  scrollbar-color: #00ff99 transparent;
 }
 
 .navbar ul {
   display: flex;
-  justify-content: center;
+  justify-content: center; /* Masaüstünde ortalı tut */
   list-style: none;
-  white-space: nowrap; /* Liste elemanlarının yan yana dizilmesini sağlar */
+  white-space: nowrap;     /* Satır atlamayı engeller */
+  flex-wrap: nowrap;       /* Alt satıra geçmesin */
+  min-width: max-content;  /* Tüm içeriği kapsasın */
+  margin: 0 auto;          /* Ortalamayı destekle */
 }
 
 .navbar ul li {
   margin: 0 20px;
+  min-width: max-content; /* "Hakkımda" gibi uzun yazılar kırpılmasın */
 }
 
 .navbar ul li a {
+  display: inline-block;
   color: #00ff99;
   text-decoration: none;
   font-size: 1.2em;
   text-transform: uppercase;
   letter-spacing: 1px;
   transition: color 0.3s;
+  white-space: nowrap; /* Yazı tek satırda kalsın */
+  overflow: visible;
 }
 
 .navbar ul li a:hover {
   color: #fff;
 }
+
 
 /* Hero Bölümü */
 .hero-section {
@@ -446,3 +457,11 @@ body.key-press {
   color: #00ff99;
   font-size: 1.2em;
 }
+
+/* Sayfadaki tüm <a> etiketlerine hover efekti ekle */
+/* Sayfadaki tüm <a> etiketlerine hover efekti ekle */
+a:hover {
+
+  text-shadow: 0 0 10px #ffaaaa;
+}
+
