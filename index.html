@@ -816,7 +816,7 @@
 
       font-size: 0.95rem; color: var(--fg2); line-height: 1.95;
 
-      margin-bottom: 22px; font-family: var(--head); font-weight: 400;
+      margin-bottom: 22px; font-family: var(--head); font-weight: 900;
 
     }
 
@@ -1046,53 +1046,37 @@
 
     }
 
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  min-width: 0; /* Gridin dışına taşmasını engellemek için kritik */
+}
 
-    .contact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.c-card {
+  background: var(--ink);
+  padding: 22px 26px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.25s;
+  min-width: 0; /* Hücrenin içeriğe göre gereksiz genişlemesini engeller */
+}
 
-
-    .c-card {
-
-      background: var(--ink); padding: 22px 26px;
-
-      position: relative; overflow: hidden;
-
-      transition: background 0.25s;
-
-    }
-
-    .c-card:hover { background: var(--ink3); }
-
-    .c-card::before {
-
-      content: ''; position: absolute; top: 0; left: 0; width: 2px; height: 100%;
-
-      background: var(--cyan); transform: scaleY(0); transform-origin: top;
-
-      transition: transform 0.35s;
-
-    }
-
-    .c-card:hover::before { transform: scaleY(1); }
-
-    .c-type { font-family: var(--mono); font-size: 0.55rem; color: var(--fg3); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 8px; }
-
-    .c-val {
-
-      font-family: var(--mono); font-size: 0.82rem; color: var(--cyan);
-
-      text-decoration: none; display: block; word-break: break-all;
-
-      transition: color 0.2s;
-
-    }
-
-    .c-val:hover { color: var(--fg); }
-
-    .c-note { font-family: var(--mono); font-size: 0.56rem; color: var(--fg3); margin-top: 6px; opacity: 0.6; }
-
-    .c-card.full { grid-column: span 2; }
-
-
+.c-val {
+  font-family: var(--mono);
+  font-size: 0.92rem;
+  color: var(--cyan);
+  text-decoration: none;
+  display: block;
+  /* Taşırma ve sığdırma ayarları */
+  word-break: break-all;
+  overflow-wrap: break-word;
+  white-space: normal;
+  max-width: 100%;
+}
     /* ═══ FOOTER ═══ */
 
     footer {
@@ -1175,7 +1159,7 @@
 
       footer { flex-direction: column; gap: 10px; padding: 18px 20px; text-align: center; }
 
-      .hero-spec { font-size: 0.62rem; }
+      .hero-spec { font-size: 0.82rem; }
 
       .hero-spec .sep { display: none; }
 
@@ -2524,12 +2508,11 @@
       // Her 18 frame'de yeni parçacık
       if(line.pTimer%18===0) spawnParticle(line);
 
-      // === ANA HAT ===
-// Ana hat glow — 0.08'den 0.03'e
-wctx.strokeStyle='rgba(0,229,255,0.03)';wctx.lineWidth=6;wctx.stroke();
-// Ana tel — 0.22'den 0.10'a
-wctx.strokeStyle='rgba(0,229,255,0.10)';wctx.lineWidth=1.2;wctx.stroke();
-
+// === ANA HAT ===
+      wctx.beginPath();wctx.moveTo(0,y);wctx.lineTo(wW,y);
+      wctx.strokeStyle='rgba(0,229,255,0.03)';wctx.lineWidth=6;wctx.stroke();
+      wctx.beginPath();wctx.moveTo(0,y);wctx.lineTo(wW,y);
+      wctx.strokeStyle='rgba(0,229,255,0.10)';wctx.lineWidth=1.2;wctx.stroke();
  // === REZİSTÖRLER ===
       line.resistors.forEach(res=>{
         const rx=res.xPct*wW;
