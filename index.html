@@ -2371,6 +2371,512 @@
 
     animate();
 
+    /* ══════════════════════════════════
+   1. MÜHENDİSLİK CETVELİ
+   Tam ekran, fareyi lag'li takip eden
+   teknik çizim cetveli
+══════════════════════════════════ */
+(function(){
+  const rul=document.createElement('canvas');
+  rul.style.cssText='position:fixed;inset:0;z-index:50;pointer-events:none;width:100%;height:100%;';
+  document.body.appendChild(rul);
+  const rctx=rul.getContext('2d');
+  let rmx=-999,rmy=-999,trx=-999,try_=-999;
+  function rsz(){rul.width=window.innerWidth;rul.height=window.innerHeight;}
+  rsz();window.addEventListener('resize',rsz);
+  document.addEventListener('mousemove',e=>{rmx=e.clientX;rmy=e.clientY;});
+  document.addEventListener('mouseleave',()=>{rmx=-999;rmy=-999;});
+  const GAP=40;
+  (function tick(){
+    requestAnimationFrame(tick);
+    trx+=(rmx-trx)*0.09; try_+=(rmy-try_)*0.09;
+    const W=rul.width,H=rul.height;
+    rctx.clearRect(0,0,W,H);
+    if(rmx<0)return;
+    rctx.font='8px "IBM Plex Mono",monospace';
+
+    // dikey çizgi
+    rctx.setLineDash([5,6]);
+    rctx.beginPath();rctx.moveTo(trx,0);rctx.lineTo(trx,H);
+    rctx.strokeStyle='rgba(0,229,255,0.16)';rctx.lineWidth=1;rctx.stroke();
+    // yatay çizgi
+    rctx.beginPath();rctx.moveTo(0,try_);rctx.lineTo(W,try_);rctx.stroke();
+    rctx.setLineDash([]);
+
+    // yatay eksen tikleri
+    rctx.textAlign='center';
+    for(let x=0;x<W;x+=GAP){
+      const maj=x%(GAP*5)===0;
+      const th=maj?10:x%(GAP*2)===0?6:3;
+      rctx.beginPath();rctx.moveTo(x,try_-th);rctx.lineTo(x,try_+th);
+      rctx.strokeStyle=maj?'rgba(0,229,255,0.55)':'rgba(0,229,255,0.18)';
+      rctx.lineWidth=maj?1:0.5;rctx.stroke();
+      if(maj){rctx.fillStyle='rgba(0,229,255,0.42)';rctx.fillText(x+'px',x,try_-14);}
+    }
+    // dikey eksen tikleri
+    rctx.textAlign='right';
+    for(let y=0;y<H;y+=GAP){
+      const maj=y%(GAP*5)===0;
+      const tw=maj?10:y%(GAP*2)===0?6:3;
+      rctx.beginPath();rctx.moveTo(trx-tw,y);rctx.lineTo(trx+tw,y);
+      rctx.strokeStyle=maj?'rgba(0,229,255,0.55)':'rgba(0,229,255,0.18)';
+      rctx.lineWidth=maj?1:0.5;rctx.stroke();
+      if(maj){rctx.fillStyle='rgba(0,229,255,0.42)';rctx.fillText(y+'px',trx-14,y+3);}
+    }
+    // kesişim noktası
+    rctx.beginPath();rctx.arc(trx,try_,3.5,0,Math.PI*2);
+    rctx.fillStyle='rgba(0,229,255,0.9)';rctx.fill();
+    // koordinat etiketi
+    rctx.font='9px "IBM Plex Mono",monospace';
+    rctx.textAlign='left';
+    rctx.fillStyle='rgba(0,229,255,0.65)';
+    rctx.fillText('X:'+Math.round(trx)+'  Y:'+Math.round(try_),trx+11,try_-12);
+    // sağ üst köşe koordinat paneli
+    rctx.fillStyle='rgba(10,12,15,0.55)';
+    rctx.fillRect(W-130,8,122,38);
+    rctx.strokeStyle='rgba(0,229,255,0.2)';rctx.lineWidth=0.5;
+    rctx.strokeRect(W-130,8,122,38);
+    rctx.fillStyle='rgba(0,229,255,0.35)';
+    rctx.font='7px "IBM Plex Mono",monospace';
+    rctx.textAlign='left';
+    rctx.fillText('MKT-ENG // CURSOR POS',W-122,22);
+    rctx.fillStyle='rgba(0,229,255,0.75)';
+    rctx.font='10px "IBM Plex Mono",monospace';
+    rctx.fillText('X:'+Math.round(trx)+'  Y:'+Math.round(try_),W-122,37);
+  })();
+})();
+
+/* ══════════════════════════════════
+   2. BÖLÜM SINIRI — ELEKTRİK HATTI
+══════════════════════════════════ */
+(function(){
+  const wc=document.createElement('canvas');
+  wc.style.cssText='position:fixed;inset:0;z-index:9990;pointer-events:none;width:100%;height:100%;';
+  document.body.insertBefore(wc,document.body.firstChild);
+  const wctx=wc.getContext('2d');
+  let wW,wH;
+  function rsz(){wW=wc.width=window.innerWidth;wH=wc.height=window.innerHeight;}
+  rsz();window.addEventListener('resize',rsz);
+
+  function getDivYs(){
+    return Array.from(document.querySelectorAll('.s-divider')).map(el=>{
+      const r=el.getBoundingClientRect();return r.top+r.height/2;
+    });
+  }
+
+  // Her hat için state
+  const lines=[];
+
+  function initLines(){
+    const ys=getDivYs();
+    ys.forEach((y,i)=>{
+      lines.push({
+        y,
+        // Akan elektrik parçacıkları
+        particles:[],
+        pTimer:0,
+        // Rezistör konumları — hat üzerinde sabit
+        resistors:[
+          {xPct:0.18, heat:0, maxHeat:1},
+          {xPct:0.50, heat:0, maxHeat:1},
+          {xPct:0.82, heat:0, maxHeat:1},
+        ],
+        // LED konumları
+        leds:[
+          {xPct:0.08, lit:0},
+          {xPct:0.35, lit:0},
+          {xPct:0.65, lit:0},
+          {xPct:0.92, lit:0},
+        ],
+        dir: i%2===0 ? 1 : -1,
+      });
+    });
+  }
+
+  setTimeout(initLines, 300);
+
+  function spawnParticle(line){
+    const startX = line.dir>0 ? 0 : wW;
+    line.particles.push({
+      x: startX,
+      speed: (2.8+Math.random()*2.2) * line.dir,
+      size: 3+Math.random()*3,
+      alpha: 0.8+Math.random()*0.2,
+      tail: [],
+    });
+  }
+
+  let pt=0;
+  (function loop(){
+    requestAnimationFrame(loop);
+    pt+=0.016;
+
+    const ys=getDivYs();
+    // y pozisyonlarını güncelle (scroll)
+    lines.forEach((l,i)=>{ if(ys[i]!==undefined) l.y=ys[i]; });
+
+    wctx.clearRect(0,0,wW,wH);
+
+    lines.forEach(line=>{
+      const y=line.y;
+      line.pTimer++;
+
+      // Her 18 frame'de yeni parçacık
+      if(line.pTimer%18===0) spawnParticle(line);
+
+      // === ANA HAT ===
+// Ana hat glow — 0.08'den 0.03'e
+wctx.strokeStyle='rgba(0,229,255,0.03)';wctx.lineWidth=6;wctx.stroke();
+// Ana tel — 0.22'den 0.10'a
+wctx.strokeStyle='rgba(0,229,255,0.10)';wctx.lineWidth=1.2;wctx.stroke();
+
+ // === REZİSTÖRLER ===
+      line.resistors.forEach(res=>{
+        const rx=res.xPct*wW;
+        const rw=22, rh=8;
+        line.particles.forEach(p=>{
+          if(Math.abs(p.x-rx)<rw) res.heat=Math.min(1,res.heat+0.06);
+        });
+        res.heat=Math.max(0,res.heat-0.012);
+        const steps=6;
+        const stepW=rw*2/steps;
+        wctx.beginPath();
+        wctx.moveTo(rx-rw,y);
+        for(let s=0;s<=steps;s++){
+          const sx=rx-rw+s*stepW;
+          // yön: line.dir > 0 ise normal, < 0 ise dikey yön ters
+          const sy=y+(s%2===0 ? -rh/2*line.dir : rh/2*line.dir);
+          wctx.lineTo(sx,sy);
+        }
+        wctx.lineTo(rx+rw,y);
+        const h=res.heat;
+        const r=Math.round(0+h*220);
+        const g=Math.round(100*(1-h*0.7));
+        const b=Math.round(180*(1-h));
+        wctx.strokeStyle=`rgba(${r},${g},${b},${0.7+h*0.3})`;
+        wctx.lineWidth=2;
+        if(h>0.1){wctx.shadowColor=`rgba(${r},${g},${b},0.8)`;wctx.shadowBlur=5+h*4;}
+        wctx.stroke();wctx.shadowBlur=0;
+        wctx.font='7px "IBM Plex Mono",monospace';
+        wctx.fillStyle=`rgba(${r},${g},${b},${0.4+h*0.5})`;
+        wctx.textAlign='center';
+        wctx.fillText('Ω',rx,y-(13*line.dir));
+      });
+
+      // === LED'LER ===
+      line.leds.forEach(led=>{
+        const lx=led.xPct*wW;
+        let close=false;
+        line.particles.forEach(p=>{ if(Math.abs(p.x-lx)<18) close=true; });
+        if(close) led.lit=Math.min(1,led.lit+0.15);
+        else led.lit=Math.max(0,led.lit-0.04);
+        const lit=led.lit;
+        wctx.beginPath();
+        wctx.moveTo(lx-5,y);wctx.lineTo(lx+5,y);
+        wctx.strokeStyle='rgba(100,150,180,0.4)';wctx.lineWidth=1;wctx.stroke();
+        wctx.save();
+        wctx.translate(lx,y);
+        // akım yönüne göre LED'i döndür — dir>0 normal, dir<0 yatayda ayna
+        wctx.scale(line.dir,1);
+        wctx.beginPath();
+        wctx.moveTo(-5,-7);wctx.lineTo(-5,7);wctx.lineTo(6,0);wctx.closePath();
+        const ledCol=lit>0.05?`rgba(0,229,255,${0.3+lit*0.7})`:'rgba(0,80,120,0.4)';
+        wctx.fillStyle=ledCol;
+        if(lit>0.1){wctx.shadowColor='rgba(0,229,255,0.9)';wctx.shadowBlur=5+lit*6;}
+        wctx.fill();wctx.shadowBlur=0;
+        wctx.beginPath();wctx.moveTo(6,-8);wctx.lineTo(6,8);
+        wctx.strokeStyle=lit>0.05?`rgba(0,229,255,${0.6+lit*0.4})`:'rgba(60,100,140,0.5)';
+        wctx.lineWidth=1.5;wctx.stroke();
+        if(lit>0.2){
+          for(let r=1;r<=2;r++){
+            wctx.beginPath();
+            wctx.moveTo(9,r*5-6);wctx.lineTo(14,r*5-6+(Math.random()-0.5)*2);
+            wctx.strokeStyle=`rgba(0,229,255,${lit*0.6/r})`;
+            wctx.lineWidth=0.8;wctx.stroke();
+          }
+        }
+        wctx.restore();
+      });
+      // === PARÇACıKLAR ===
+      line.particles=line.particles.filter(p=>{
+        const out=line.dir>0?p.x>wW+20:p.x<-20;
+        return !out;
+      });
+
+      line.particles.forEach(p=>{
+        // kuyruk kaydet
+        p.tail.push({x:p.x,y});
+        if(p.tail.length>22) p.tail.shift();
+
+        p.x+=p.speed;
+
+        // Kuyruk
+        for(let t=0;t<p.tail.length-1;t++){
+          const a=(t/p.tail.length)*0.6*p.alpha;
+          wctx.beginPath();
+          wctx.moveTo(p.tail[t].x,p.tail[t].y);
+          wctx.lineTo(p.tail[t+1].x,p.tail[t+1].y);
+          wctx.strokeStyle=`rgba(0,229,255,${a})`;
+          wctx.lineWidth=2+t/p.tail.length*2;wctx.stroke();
+        }
+
+        // Parçacık gövdesi — parlak yuvarlak
+        const pg=wctx.createRadialGradient(p.x,y,0,p.x,y,p.size*2.2);
+        pg.addColorStop(0,`rgba(220,248,255,${p.alpha})`);
+        pg.addColorStop(0.4,`rgba(0,229,255,${p.alpha*0.9})`);
+        pg.addColorStop(1,'rgba(0,229,255,0)');
+        wctx.beginPath();wctx.arc(p.x,y,p.size*2.2,0,Math.PI*2);
+        wctx.fillStyle=pg;
+        wctx.shadowColor='rgba(0,229,255,1)';wctx.shadowBlur=12;
+        wctx.fill();wctx.shadowBlur=0;
+
+        // merkez beyaz
+        wctx.beginPath();wctx.arc(p.x,y,p.size*0.5,0,Math.PI*2);
+        wctx.fillStyle=`rgba(255,255,255,${p.alpha*0.4})`;wctx.fill();
+      });
+    });
+  })();
+})();
+/* ══════════════════════════════════
+   3. ARK MAKİNESİ
+   İki elektrot — aralarında atlayan
+   çatallanmış yıldırım ark deşarjı
+══════════════════════════════════ */
+(function(){
+  const host=document.getElementById('contact');
+  if(!host)return;
+
+  const wrap=document.createElement('div');
+  Object.assign(wrap.style,{
+    position:'relative',width:'100%',height:'160px',
+    overflow:'hidden',background:'transparent',marginTop:'-16px',
+  });
+  const ac=document.createElement('canvas');
+  ac.style.cssText='display:block;width:100%;height:100%;';
+  wrap.appendChild(ac);
+  host.after(wrap);
+
+  const actx=ac.getContext('2d');
+  let aW,aH;
+  function rsz(){aW=ac.width=ac.offsetWidth;aH=ac.height=ac.offsetHeight;}
+  rsz();window.addEventListener('resize',rsz);
+
+  // elektrot konumları
+  function lx(){return aW*0.12;}
+  function rx(){return aW*0.88;}
+  function ey(){return aH*0.52;}
+
+  const ARC={bolts:[],sparks:[],glowPhase:0,bTimer:0};
+
+  function makeBolt(x1,y1,x2,y2){
+    const pts=[{x:x1,y:y1}];
+    function sub(ax,ay,bx,by,d){
+      if(d===0){pts.push({x:bx,y:by});return;}
+      const len=Math.hypot(bx-ax,by-ay);
+      const mx=(ax+bx)/2+(Math.random()-0.5)*len*0.42;
+      const my=(ay+by)/2+(Math.random()-0.5)*len*0.42;
+      sub(ax,ay,mx,my,d-1);sub(mx,my,bx,by,d-1);
+    }
+    sub(x1,y1,x2,y2,5);
+    return pts;
+  }
+
+  function spawnBolt(){
+    const jit=16;
+    const y1=ey()+(Math.random()-0.5)*jit;
+    const y2=ey()+(Math.random()-0.5)*jit;
+    ARC.bolts.push({
+      pts:makeBolt(lx(),y1,rx(),y2),
+      life:1,decay:0.055+Math.random()*0.07,
+      w:Math.random()<0.25?2.2:0.9,
+      col:Math.random()<0.65?[0,229,255]:Math.random()<0.5?[180,240,255]:[255,250,200],
+      branch:Math.random()<0.4, // dallanma
+    });
+    // kıvılcımlar
+    for(let i=0;i<8;i++){
+      const side=Math.random()<0.5?lx():rx();
+      const a=Math.random()*Math.PI*2;
+      const spd=1.8+Math.random()*4;
+      ARC.sparks.push({x:side,y:ey()+(Math.random()-0.5)*14,
+        vx:Math.cos(a)*spd,vy:Math.sin(a)*spd-0.8,
+        life:1,decay:0.035+Math.random()*0.045,r:Math.random()*2.2+0.4});
+    }
+  }
+
+  function drawElectrode(x,y){
+    // yalıtkan sütun
+    const ig=actx.createLinearGradient(x-8,0,x+8,0);
+    ig.addColorStop(0,'rgba(30,42,54,0.9)');
+    ig.addColorStop(0.5,'rgba(55,72,90,0.9)');
+    ig.addColorStop(1,'rgba(30,42,54,0.9)');
+    actx.fillStyle=ig;
+    actx.fillRect(x-7,y+14,14,aH-y-14);
+    // yalıtkan halkalar
+    for(let i=0;i<5;i++){
+      actx.beginPath();actx.arc(x,y+18+i*10,9,0,Math.PI*2);
+      actx.strokeStyle='rgba(50,70,90,0.7)';actx.lineWidth=5;actx.stroke();
+    }
+    // iletken çubuk
+    const rg=actx.createLinearGradient(x-4,0,x+4,0);
+    rg.addColorStop(0,'rgba(60,80,100,1)');
+    rg.addColorStop(0.5,'rgba(110,140,160,1)');
+    rg.addColorStop(1,'rgba(60,80,100,1)');
+    actx.fillStyle=rg;
+    actx.fillRect(x-3.5,y-28,7,42);
+    // uç aura
+    const ag=actx.createRadialGradient(x,y,0,x,y,22);
+    ag.addColorStop(0,`rgba(0,229,255,${0.15+Math.sin(ARC.glowPhase)*0.08})`);
+    ag.addColorStop(1,'rgba(0,229,255,0)');
+    actx.beginPath();actx.arc(x,y,22,0,Math.PI*2);
+    actx.fillStyle=ag;actx.fill();
+    // uç nokta
+    actx.beginPath();actx.arc(x,y,5,0,Math.PI*2);
+    actx.fillStyle='rgba(0,229,255,0.6)';actx.fill();
+    actx.beginPath();actx.arc(x,y,2,0,Math.PI*2);
+    actx.fillStyle='rgba(200,240,255,0.95)';actx.fill();
+    // etiket
+    actx.font='8px "IBM Plex Mono",monospace';
+    actx.fillStyle='rgba(0,229,255,0.32)';
+    actx.textAlign='center';
+    actx.fillText(x<aW/2?'(-) KATOT':'(+) ANOT',x,y+60+28);
+  }
+
+
+  let at=0;
+  (function loop(){
+    requestAnimationFrame(loop);
+    at+=0.016;rsz();
+    ARC.glowPhase+=0.05;ARC.bTimer++;
+    actx.clearRect(0,0,aW,aH);
+
+    // üst bağlantı rayı
+    actx.beginPath();actx.moveTo(lx(),12);actx.lineTo(rx(),12);
+    actx.strokeStyle='rgba(50,70,90,0.6)';actx.lineWidth=5;actx.stroke();
+    actx.beginPath();actx.moveTo(lx(),14);actx.lineTo(rx(),14);
+    actx.strokeStyle='rgba(0,229,255,0.07)';actx.lineWidth=1;actx.stroke();
+
+    // başlık
+    actx.font='8px "IBM Plex Mono",monospace';
+    actx.fillStyle='rgba(0,229,255,0.28)';actx.textAlign='center';
+    actx.fillText('// ELEKTRİK ARK DEŞARJÜ — KATOT → ANOT → PLAZMA',aW/2,8);
+
+    // elektrotlar arası plazma alanı
+    const pg=actx.createLinearGradient(lx(),ey(),rx(),ey());
+    const gp=0.03+Math.sin(ARC.glowPhase)*0.018;
+    pg.addColorStop(0,'rgba(0,229,255,0)');
+    pg.addColorStop(0.2,`rgba(0,229,255,${gp})`);
+    pg.addColorStop(0.5,`rgba(80,200,255,${gp*1.6})`);
+    pg.addColorStop(0.8,`rgba(0,229,255,${gp})`);
+    pg.addColorStop(1,'rgba(0,229,255,0)');
+    actx.fillStyle=pg;
+    actx.fillRect(lx(),ey()-20,rx()-lx(),40);
+
+    // ark ateşleme
+    if(ARC.bTimer%16===0)spawnBolt();
+    if(Math.random()<0.1)spawnBolt();
+
+    // ark çizimi
+    ARC.bolts=ARC.bolts.filter(b=>b.life>0);
+    ARC.bolts.forEach(b=>{
+      b.life-=b.decay;
+      const[r,g,bl]=b.col;
+
+      // dış kor
+      actx.beginPath();
+      b.pts.forEach((p,i)=>i===0?actx.moveTo(p.x,p.y):actx.lineTo(p.x,p.y));
+      actx.strokeStyle=`rgba(${r},${g},${bl},${b.life*0.12})`;
+      actx.lineWidth=18;actx.shadowBlur=0;actx.stroke();
+
+      // orta
+      actx.beginPath();
+      b.pts.forEach((p,i)=>i===0?actx.moveTo(p.x,p.y):actx.lineTo(p.x,p.y));
+      actx.strokeStyle=`rgba(${r},${g},${bl},${b.life*0.35})`;
+      actx.lineWidth=5;actx.stroke();
+
+      // kor çizgi
+      actx.beginPath();
+      b.pts.forEach((p,i)=>i===0?actx.moveTo(p.x,p.y):actx.lineTo(p.x,p.y));
+      actx.strokeStyle=`rgba(${r},${g},${bl},${b.life*0.95})`;
+      actx.lineWidth=b.w;
+      actx.shadowColor='rgba(0,229,255,1)';actx.shadowBlur=10;
+      actx.stroke();actx.shadowBlur=0;
+
+      // parlak beyaz merkez
+      actx.beginPath();
+      b.pts.forEach((p,i)=>i===0?actx.moveTo(p.x,p.y):actx.lineTo(p.x,p.y));
+      actx.strokeStyle=`rgba(255,255,255,${b.life*0.4})`;
+      actx.lineWidth=0.5;actx.stroke();
+
+      // dal ark (rastgele)
+      if(b.branch&&b.pts.length>8){
+        const startIdx=Math.floor(b.pts.length*0.3+Math.random()*b.pts.length*0.4);
+        const sp=b.pts[startIdx];
+        const branchPts=[sp];
+        function subBranch(ax,ay,bx,by,d){
+          if(d===0){branchPts.push({x:bx,y:by});return;}
+          const l=Math.hypot(bx-ax,by-ay);
+          const mx=(ax+bx)/2+(Math.random()-0.5)*l*0.5;
+          const my=(ay+by)/2+(Math.random()-0.5)*l*0.5;
+          subBranch(ax,ay,mx,my,d-1);subBranch(mx,my,bx,by,d-1);
+        }
+        const ex2=sp.x+(Math.random()-0.5)*120;
+        const ey2=sp.y+(Math.random()-0.5)*60;
+        subBranch(sp.x,sp.y,ex2,ey2,3);
+        actx.beginPath();
+        branchPts.forEach((p,i)=>i===0?actx.moveTo(p.x,p.y):actx.lineTo(p.x,p.y));
+        actx.strokeStyle=`rgba(${r},${g},${bl},${b.life*0.4})`;
+        actx.lineWidth=0.6;actx.stroke();
+      }
+    });
+
+    // kıvılcımlar
+    ARC.sparks=ARC.sparks.filter(s=>s.life>0);
+    ARC.sparks.forEach(s=>{
+      s.x+=s.vx;s.y+=s.vy;
+      s.vx*=0.90;s.vy+=0.12;
+      s.life-=s.decay;
+      actx.beginPath();actx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      actx.fillStyle=`rgba(0,229,255,${s.life*0.9})`;actx.fill();
+      actx.beginPath();actx.moveTo(s.x,s.y);
+      actx.lineTo(s.x-s.vx*4,s.y-s.vy*4);
+      actx.strokeStyle=`rgba(0,229,255,${s.life*0.4})`;actx.lineWidth=0.8;actx.stroke();
+    });
+// sinüs dalgası — ark makinesinin altında
+    const sw1 = aH * 0.88;
+    const sw2 = aH * 0.94;
+    const sPhase = at * 2.5;
+    const sPhase2 = at * 1.8 + Math.PI;
+
+    [
+      {y: sw1, amp: 6, freq: 0.022, col: [0,229,255], alpha: 0.55, lw: 1.4},
+      {y: sw2, amp: 4, freq: 0.034, col: [60,180,255], alpha: 0.35, lw: 1.0},
+    ].forEach(s => {
+      // glow
+      actx.beginPath();
+      for(let x = 0; x <= aW; x += 3){
+        const yo = Math.sin(x * s.freq + sPhase) * s.amp;
+        x === 0 ? actx.moveTo(x, s.y + yo) : actx.lineTo(x, s.y + yo);
+      }
+      actx.strokeStyle = `rgba(${s.col},${s.alpha * 0.18})`;
+      actx.lineWidth = 10; actx.shadowBlur = 0; actx.stroke();
+
+      // ana çizgi
+      actx.beginPath();
+      for(let x = 0; x <= aW; x += 2){
+        const yo = Math.sin(x * s.freq + sPhase) * s.amp;
+        x === 0 ? actx.moveTo(x, s.y + yo) : actx.lineTo(x, s.y + yo);
+      }
+      actx.strokeStyle = `rgba(${s.col},${s.alpha})`;
+      actx.lineWidth = s.lw;
+      actx.shadowColor = `rgba(${s.col},0.7)`;
+      actx.shadowBlur = 6; actx.stroke(); actx.shadowBlur = 0;
+    });
+    // elektrotları çiz
+    drawElectrode(lx(),ey());
+    drawElectrode(rx(),ey());
+  })();
+
+})();
   </script>
 
 </body>
